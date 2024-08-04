@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="x-apple-disable-message-reformatting">
-    <title>IFCA - BTID</title>
+    <title>Grand Outlet Bali</title>
     <link rel="shortcut icon" type="image/x-icon" href="{{ url('public/images/KuraKuraBali-ico.ico') }}">
     
     <style>
