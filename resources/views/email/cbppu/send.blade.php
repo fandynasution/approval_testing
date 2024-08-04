@@ -60,7 +60,7 @@
                             <tr>
                                 <td style="text-align: center; padding-bottom:25px">
                                     <img width = "120" src="{{ url('public/images/grand_outlet.jpg') }}" alt="logo">
-                                        <p style="font-size: 16px; color: #026735; padding-top: 0px;">{{ $dataArray['entity_name'] }}</p>
+                                        <p style="font-size: 16px; color: #026735; padding-top: 0px;">PT. GRAND OUTLET BALI</p>
                                 </td>
                             </tr>
                         </tbody>
