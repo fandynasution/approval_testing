@@ -29,7 +29,7 @@
                         <tbody>
                             <tr>
                                 <td style="text-align: center; padding-bottom:25px">
-                                    <img width = "120" src="{{ url('public/images/GOB.jpg') }}" alt="logo">
+                                    <img width = "120" src="{{ url('public/images/grand_outlet.jpg') }}" alt="logo">
                                     <p style="font-size: 16px; color: #026735; padding-top: 0px;"><?php echo $entity_name?></p>
                                 </td>
                             </tr>
