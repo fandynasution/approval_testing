@@ -393,18 +393,22 @@ class StaffActionController extends Controller
         $ftp_conn = ftp_connect($ftp_server) or die("Could not connect to $ftp_server");
 
         // Log in to FTP server
-        $ftp_user_name = "ifca_dev";
+        $ftp_user_name = "ifca_gob";
         $ftp_user_pass = "@Serangan1212";
         $login = ftp_login($ftp_conn, $ftp_user_name, $ftp_user_pass);
 
         $file = "ifca-att/".$folder_name."/".$file_name;
 
-        if (ftp_size($ftp_conn, $file) >= 0) {
-            echo "Ada File";
-        } else {
-            echo "Tidak Ada File";
-        }
+        $size = ftp_size($ftp_conn, $file);
 
-        ftp_close($ftp_conn);
+	if ($size == -1) {
+        	echo "Tidak Ada File"; // File does not exist
+    	} elseif ($size == 0) {
+        	echo "Tidak Ada File"; // File exists but is 0 bytes
+    	} else {
+        	echo "Ada File"; // File exists and has size greater than 0 bytes
+    	}
+
+    ftp_close($ftp_conn);
     }
 }
