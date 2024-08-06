@@ -38,7 +38,7 @@ class SendPLLymanMail extends Mailable
     {
 
         return $this->subject($this->dataArray['subject'])
-                    ->view('email.pllyman.send')
+                    ->view('email.plbudget.send')
                     ->with([
                         'encryptedData' => $this->encryptedData,
                         'dataArray' => $this->dataArray,
