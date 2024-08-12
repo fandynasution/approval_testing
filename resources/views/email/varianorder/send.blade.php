@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta http-equiv="Content-Type" content="application/pdf">
     <meta name="x-apple-disable-message-reformatting">
-    <title>Grand Outlet Bali</title>
+    <title>IFCA - BTID</title>
     <link rel="shortcut icon" type="image/x-icon" href="{{ url('public/images/KuraKuraBali-ico.ico') }}">
     
     <style>
@@ -59,8 +59,8 @@
                         <tbody>
                             <tr>
                                 <td style="text-align: center; padding-bottom:25px">
-                                    <img width = "120" src="{{ url('public/images/grand_outlet.jpg') }}" alt="logo">
-                                        <p style="font-size: 16px; color: #026735; padding-top: 0px;">PT. GRAND OUTLET BALI</p>
+                                    <img width = "120" src="{{ url('public/images/KURAKURABALI_LOGO.jpg') }}" alt="logo">
+                                        <p style="font-size: 16px; color: #026735; padding-top: 0px;">{{ $dataArray['entity_name'] }}</p>
                                 </td>
                             </tr>
                         </tbody>
@@ -77,7 +77,7 @@
                                     </p>
                                     <p style="text-align:left; margin-bottom: 15px; margin-top: 0; color: #000000; font-size: 16px; list-style-type: circle;">
                                         <b>VO No. :{{ $dataArray['doc_no'] }}</b><br>
-                                        With a VO amount of {{ $dataArray['curr_cd'] }} {{ $dataArray['vo_appr_amt'] }}<br>
+                                        With a VO amount of {{ $dataArray['curr_cd'] }} {{ $dataArray['vo_sub_amt'] }}<br>
                                     </p>
 
                                     @php
@@ -97,6 +97,27 @@
                                         @endif
                                     @endforeach
                     
+                                    @if($hasAttachment)
+                                        </p>
+                                    @endif
+
+                                    @php
+                                        $hasAttachment = false;
+                                    @endphp
+
+                                    @if($dataArray['doc_link'] !== '' && $dataArray['doc_link'] !== 'EMPTY')
+                                        @if(strpos($dataArray['doc_link'], 'http://') === 0 || strpos($dataArray['doc_link'], 'https://') === 0)
+                                            @if(!$hasAttachment)
+                                                @php
+                                                    $hasAttachment = true;
+                                                @endphp
+                                                <p style="text-align:left; margin-bottom: 15px; color: #000000; font-size: 16px;">
+                                                    <span>This request comes with additional supporting documents, such as detailed specifications, that you can access from the link below :</span><br>
+                                            @endif
+                                            <a href="{{ $dataArray['doc_link'] }}" target="_blank">Additional Document Link</a><br>
+                                        @endif
+                                    @endif
+
                                     @if($hasAttachment)
                                         </p>
                                     @endif

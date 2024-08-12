@@ -50,6 +50,7 @@ class VarianOrderController extends Controller
             'approve_seq'       => $request->approve_seq,
             'url_file'          => $url_data,
             'file_name'         => $file_data,
+            'doc_link'          => $request->doc_link,
             'vo_sub_amt'        => $vo_sub_amt,
             'vo_appr_amt'       => $vo_appr_amt,
             'curr_cd'           => $request->curr_cd,
