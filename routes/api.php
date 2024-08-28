@@ -109,3 +109,8 @@ Route::POST('/budgetrevision/getaccess', [PLBudgetRevision::class, 'update']);
 use App\Http\Controllers\FeedbackPLController as FeedbackPL;
 Route::POST('/feedbackbudgetlyman', [FeedbackPL::class, 'feedbackbudgetlyman']);
 Route::POST('/feedbackbudgetrevision', [FeedbackPL::class, 'feedbackbudgetrevision']);
+
+use App\Http\Controllers\ContractRenewController as ContractRenew;
+Route::POST('/contractrenew', [ContractRenew::class, 'Mail']);
+Route::GET('/contractrenew/{status}/{encrypt}', [ContractRenew::class, 'processData']);
+Route::POST('/contractrenew/getaccess', [ContractRenew::class, 'update']);
