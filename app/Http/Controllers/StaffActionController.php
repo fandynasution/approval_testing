@@ -138,7 +138,7 @@ class StaffActionController extends Controller
         
         } else if (strcasecmp($request->status, 'A') == 0) {
             $action = 'Approval';
-            $bodyEMail = 'Your Request ' . $request->descs . ' No. ' . $request->doc_no . ' has been Approved';
+            $bodyEMail = 'Your Request ' . $request->descs . ' No. ' . $request->doc_no . ' has been Approved with the Note : ' . $request->reason;
         }
         
         $list_of_urls = explode('; ', $request->url_file);
@@ -399,16 +399,12 @@ class StaffActionController extends Controller
 
         $file = "ifca-att/".$folder_name."/".$file_name;
 
-        $size = ftp_size($ftp_conn, $file);
+        if (ftp_size($ftp_conn, $file) > 0) {
+            echo "Ada File";
+        } else {
+            echo "Tidak Ada File";
+        }
 
-	if ($size == -1) {
-        	echo "Tidak Ada File"; // File does not exist
-    	} elseif ($size == 0) {
-        	echo "Tidak Ada File"; // File exists but is 0 bytes
-    	} else {
-        	echo "Ada File"; // File exists and has size greater than 0 bytes
-    	}
-
-    ftp_close($ftp_conn);
+        ftp_close($ftp_conn);
     }
 }
