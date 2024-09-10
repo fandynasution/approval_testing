@@ -7,7 +7,7 @@
     <meta http-equiv="Content-Type" content="application/pdf">
     <meta name="x-apple-disable-message-reformatting">
     <title>Grand Outlet Bali</title>
-    <link rel="shortcut icon" type="image/x-icon" href="{{ url('public/images/KuraKuraBali-ico.ico') }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ url('public/images/gob_ico.ico') }}">
     
     <style>
         body {
