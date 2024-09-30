@@ -104,7 +104,7 @@ class ContractRenewController extends Controller
         
                     // Log the success
                     Log::channel('sendmailapproval')->info('Email Contract Renew doc_no '.$doc_no.' Entity ' . $entity_cd.' berhasil dikirim ke: ' . $email);
-                    return 'Email berhasil dikirim ke: ' . $email;
+                    return 'Email berhasil dikirim';
                 } else {
                     // Email was already sent
                     Log::channel('sendmailapproval')->info('Email Contract Renew doc_no '.$doc_no.' Entity ' . $entity_cd.' already sent to: ' . $email);
