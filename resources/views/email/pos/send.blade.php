@@ -100,6 +100,27 @@
                                     @if($hasAttachment)
                                         </p>
                                     @endif
+
+				    @php
+                                        $hasAttachment = false;
+                                    @endphp
+                    
+                                    @foreach($dataArray['doc_link'] as $key => $doc_link)
+                                        @if($doc_link !== '' && $doc_link !== 'EMPTY')
+                                            @if(!$hasAttachment)
+                                                @php
+                                                    $hasAttachment = true;
+                                                @endphp
+                                                <p style="text-align:left; margin-bottom: 15px; color: #000000; font-size: 16px;">
+                                                    <span>This request to purchase comes with additional supporting documents, such as detailed specifications, that you can access from the link below :</span><br>
+                                            @endif
+                                            <a href="{{ $doc_link }}" target="_blank">Additional Document Link</a><br>
+                                        @endif
+                                    @endforeach
+                    
+                                    @if($hasAttachment)
+                                        </p>
+                                    @endif
                     
                                     <a href="{{ url('api') }}/poselection/A/{{ $encryptedData }}" style="display: inline-block; font-size: 13px; font-weight: 600; line-height: 20px; text-align: center; text-decoration: none; text-transform: uppercase; padding: 10px 40px; background-color: #1ee0ac; border-radius: 4px; color: #ffffff;">Approve</a>
                                     <a href="{{ url('api') }}/poselection/R/{{ $encryptedData }}" style="display: inline-block; font-size: 13px; font-weight: 600; line-height: 20px; text-align: center; text-decoration: none; text-transform: uppercase; padding: 10px 40px; background-color: #f4bd0e; border-radius: 4px; color: #ffffff;">Revise</a>
