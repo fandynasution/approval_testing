@@ -88,7 +88,7 @@ class AutoFeedbackController extends Controller
                 $cacheFile = 'email_feedback_sent_' . $approve_seq . '_' . $entity_cd . '_' . $doc_no . '_' . $status . '.txt';
                 $exec = 'mgr.x_send_mail_approval_feedback_cb_rpb';
                 $folder = 'feedbackCb';
-            } else if ($type == 'D' && $module == "CB")
+            } else if ($type == 'G' && $module == "CB")
             {
                 $descsLong = 'Cash Advance Settlement';
                 $cacheFile = 'email_feedback_sent_' . $approve_seq . '_' . $entity_cd . '_' . $doc_no . '_' . $status . '.txt';
@@ -116,27 +116,27 @@ class AutoFeedbackController extends Controller
                 $descsLong = 'Contract Progress';
                 $cacheFile = 'email_feedback_sent_' . $approve_seq . '_' . $entity_cd . '_' . $doc_no . '_' . $status . '.txt';
                 $exec = 'mgr.x_send_mail_approval_feedback';
-                $folder = 'send_cmprogress';
+                $folder = 'feedbackCb';
             } else if ($type == 'B' && $module == 'CM') {
                 $descsLong = 'Contract Complete';
                 $cacheFile = 'email_feedback_sent_' . $approve_seq . '_' . $entity_cd . '_' . $doc_no . '_' . $status . '.txt';
                 $exec = 'mgr.x_send_mail_approval_feedback';
-                $folder = 'send_cmdone';
+                $folder = 'feedbackCb';
             } else if ($type == 'C' && $module == 'CM') {
                 $descsLong = 'Warranty Complete';
                 $cacheFile = 'email_feedback_sent_' . $approve_seq . '_' . $entity_cd . '_' . $doc_no . '_' . $status . '.txt';
                 $exec = 'mgr.x_send_mail_approval_feedback';
-                $folder = 'send_cmclose';
+                $folder = 'feedbackCb';
             } else if ($type == 'D' && $module == 'CM') {
                 $descsLong = 'Varian Order';
                 $cacheFile = 'email_feedback_sent_' . $approve_seq . '_' . $entity_cd . '_' . $doc_no . '_' . $status . '.txt';
                 $exec = 'mgr.x_send_mail_approval_feedback';
-                $folder = 'send_varianorder';
+                $folder = 'feedbackCb';
             } else if ($type == 'E' && $module == 'CM') {
                 $descsLong = 'Contract Entry';
                 $cacheFile = 'email_feedback_sent_' . $approve_seq . '_' . $entity_cd . '_' . $doc_no . '_' . $status . '.txt';
                 $exec = 'mgr.x_send_mail_approval_feedback';
-                $folder = 'send_cmentry';
+                $folder = 'feedbackCb';
             }
             $defaultDate = date('Ymd');
             $cacheFilePath = storage_path('app/mail_cache/'.$folder.'/' . $defaultDate . '/' . $cacheFile);

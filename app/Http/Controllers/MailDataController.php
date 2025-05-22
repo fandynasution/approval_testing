@@ -163,6 +163,7 @@ class MailDataController extends Controller
             return $result;
 
         } catch (\Exception $e) {
+	    \Log::error('Error in getAccess method: ' . $e->getMessage());
             $msg1 = array(
                 "Pesan" => "FAILED",
                 "image" => "reject.png"

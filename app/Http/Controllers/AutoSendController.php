@@ -30,8 +30,6 @@ class AutoSendController extends Controller
         ->table('mgr.cb_cash_request_appr')
         ->whereNull('sent_mail_date')
         ->where('status', 'P')
-        ->where('type', 'U')
-        ->where('module', 'CB')
         ->whereNotNull('currency_cd')
         ->where('entity_cd', '!=', 'DKY')
         ->where('audit_date', '>=', DB::raw("CONVERT(datetime, '2024-03-28', 120)"))
@@ -58,6 +56,8 @@ class AutoSendController extends Controller
                 $exec = 'mgr.x_send_mail_approval_cb_ppu';
             } else if ($type == 'V' && $module == "CB") {
                 $exec = 'mgr.x_send_mail_approval_cb_ppu_vvip';
+            } else if ($type == 'Q' && $module == "PO") {
+                $exec = 'mgr.x_send_mail_approval_po_request';
             }
             $whereUg = array(
                 'user_name' => $user_id
@@ -82,21 +82,41 @@ class AutoSendController extends Controller
             $supervisor = $querysupervisor[0]->supervisor;
 
             if ($level_no == 1) {
-                $statussend = 'P';
-                $downLevel = '0';
-                $pdo = DB::connection('BTID')->getPdo();
-                $sth = $pdo->prepare("SET NOCOUNT ON; EXEC ".$exec." ?, ?, ?, ?, ?, ?, ?, ?, ?, ?;");
-                $sth->bindParam(1, $entity_cd);
-                $sth->bindParam(2, $project_no);
-                $sth->bindParam(3, $doc_no);
-                $sth->bindParam(4, $trx_type);
-                $sth->bindParam(5, $statussend);
-                $sth->bindParam(6, $downLevel);
-                $sth->bindParam(7, $user_group);
-                $sth->bindParam(8, $user_id);
-                $sth->bindParam(9, $supervisor);
-                $sth->bindParam(10, $reason);
-                $sth->execute();
+                if ($type == 'Q' && $module == "PO") {
+                    $statussend = 'P';
+                    $downLevel = '0';
+                    $pdo = DB::connection('BTID')->getPdo();
+                    $sth = $pdo->prepare("SET NOCOUNT ON; EXEC mgr.x_send_mail_approval_po_request ?, ?, ?, ?, ?, ?, ?, ?, ?;");
+                    $sth->bindParam(1, $entity_cd);
+                    $sth->bindParam(2, $project_no);
+                    $sth->bindParam(3, $doc_no);
+                    $sth->bindParam(4, $statussend);
+                    $sth->bindParam(5, $downLevel);
+                    $sth->bindParam(6, $user_group);
+                    $sth->bindParam(7, $user_id);
+                    $sth->bindParam(8, $supervisor);
+                    $sth->bindParam(9, $reason);
+                    $sth->execute();
+                }  else if ($type == 'D' && $module == "CB") {
+                    // Skip this condition, do nothing for type 'D' and module 'CB'
+                    continue;  // This will skip the current iteration of the loop
+                } else {
+                    $statussend = 'P';
+                    $downLevel = '0';
+                    $pdo = DB::connection('BTID')->getPdo();
+                    $sth = $pdo->prepare("SET NOCOUNT ON; EXEC ".$exec." ?, ?, ?, ?, ?, ?, ?, ?, ?, ?;");
+                    $sth->bindParam(1, $entity_cd);
+                    $sth->bindParam(2, $project_no);
+                    $sth->bindParam(3, $doc_no);
+                    $sth->bindParam(4, $trx_type);
+                    $sth->bindParam(5, $statussend);
+                    $sth->bindParam(6, $downLevel);
+                    $sth->bindParam(7, $user_group);
+                    $sth->bindParam(8, $user_id);
+                    $sth->bindParam(9, $supervisor);
+                    $sth->bindParam(10, $reason);
+                    $sth->execute();
+                }
             } else if ($level_no > 1){
                 $downLevel  = $level_no - 1;
                 $statussend = 'A';
@@ -113,19 +133,37 @@ class AutoSendController extends Controller
     
                 $level_data = $querybefore[0]->status;
                 if ($level_data == 'A'){
-                    $pdo = DB::connection('BTID')->getPdo();
-                    $sth = $pdo->prepare("SET NOCOUNT ON; EXEC ".$exec." ?, ?, ?, ?, ?, ?, ?, ?, ?, ?;");
-                    $sth->bindParam(1, $entity_cd);
-                    $sth->bindParam(2, $project_no);
-                    $sth->bindParam(3, $doc_no);
-                    $sth->bindParam(4, $trx_type);
-                    $sth->bindParam(5, $statussend);
-                    $sth->bindParam(6, $downLevel);
-                    $sth->bindParam(7, $user_group);
-                    $sth->bindParam(8, $user_id);
-                    $sth->bindParam(9, $supervisor);
-                    $sth->bindParam(10, $reason);
-                    $sth->execute();
+                    if ($type == 'Q' && $module == "PO") {
+                        $pdo = DB::connection('BTID')->getPdo();
+                        $sth = $pdo->prepare("SET NOCOUNT ON; EXEC mgr.x_send_mail_approval_po_request ?, ?, ?, ?, ?, ?, ?, ?, ?;");
+                        $sth->bindParam(1, $entity_cd);
+                        $sth->bindParam(2, $project_no);
+                        $sth->bindParam(3, $doc_no);
+                        $sth->bindParam(4, $statussend);
+                        $sth->bindParam(5, $downLevel);
+                        $sth->bindParam(6, $user_group);
+                        $sth->bindParam(7, $user_id);
+                        $sth->bindParam(8, $supervisor);
+                        $sth->bindParam(9, $reason);
+                        $sth->execute();
+                    }  else if ($type == 'D' && $module == "CB") {
+                        // Skip this condition, do nothing for type 'D' and module 'CB'
+                        continue;  // This will skip the current iteration of the loop
+                    } else {
+                        $pdo = DB::connection('BTID')->getPdo();
+                        $sth = $pdo->prepare("SET NOCOUNT ON; EXEC ".$exec." ?, ?, ?, ?, ?, ?, ?, ?, ?, ?;");
+                        $sth->bindParam(1, $entity_cd);
+                        $sth->bindParam(2, $project_no);
+                        $sth->bindParam(3, $doc_no);
+                        $sth->bindParam(4, $trx_type);
+                        $sth->bindParam(5, $statussend);
+                        $sth->bindParam(6, $downLevel);
+                        $sth->bindParam(7, $user_group);
+                        $sth->bindParam(8, $user_id);
+                        $sth->bindParam(9, $supervisor);
+                        $sth->bindParam(10, $reason);
+                        $sth->execute();
+                    }
                 }
             }
         }
