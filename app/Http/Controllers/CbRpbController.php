@@ -88,6 +88,8 @@ class CbRpbController extends Controller
             $entity_cd = $data["entity_cd"];
             $doc_no = $data["doc_no"];
             $level_no = $data["level_no"];
+            $email_ccgm = strtolower($data["email_ccgm"]);
+            $email_gm = strtolower($data["email_gm"]);
         
             // Check if email addresses are provided and not empty
             if (!empty($emailAddresses)) {
@@ -114,7 +116,14 @@ class CbRpbController extends Controller
         
                 if (!file_exists($cacheFilePath)) {
                     // Send email
-                    Mail::to($email)->send(new SendCbRpbMail($encryptedData, $dataArray));
+                    // Mail::to($email)->send(new SendCbRpbMail($encryptedData, $dataArray));
+                    if ($email === $email_gm) {
+                        Mail::to($email)
+                            ->cc($email_ccgm)
+                            ->send(new SendCbRpbMail($encryptedData, $dataArray));
+                    } else {
+                        Mail::to($email)->send(new SendCbRpbMail($encryptedData, $dataArray));
+                    }
         
                     // Mark email as sent
                     file_put_contents($cacheFilePath, 'sent');

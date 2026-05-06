@@ -117,3 +117,39 @@ Route::POST('/contractrenew/getaccess', [ContractRenew::class, 'update']);
 
 use App\Http\Controllers\ConvertController as Convert;
 Route::get('/export-budget/{bg}/{dept_cd}', [Convert::class, 'export']);
+
+use App\Http\Controllers\PoGrnController as PoGrn;
+Route::POST('/pogrn', [PoGrn::class, 'Mail']);
+Route::GET('/pogrn/{status}/{encrypt}', [PoGrn::class, 'processData']);
+Route::POST('/pogrn/getaccess', [PoGrn::class, 'getaccess']);
+Route::POST('/feedback_pogrn', [PoGrn::class, 'feedback_pogrn']);
+
+use App\Http\Controllers\IcStockController as IcStock;
+Route::POST('/IcStock', [IcStock::class, 'Mail']);
+Route::GET('/IcStock/{status}/{encrypt}', [IcStock::class, 'processData']);
+Route::POST('/IcStock/getaccess', [IcStock::class, 'getaccess']);
+Route::POST('/feedback_icstock', [IcStock::class, 'feedback_icstock']);
+
+use App\Http\Controllers\IcReceiptController as IcReceipt;
+Route::POST('/IcReceipt', [IcReceipt::class, 'Mail']);
+Route::GET('/IcReceipt/{status}/{encrypt}', [IcReceipt::class, 'processData']);
+Route::POST('/IcReceipt/getaccess', [IcReceipt::class, 'getaccess']);
+Route::POST('/feedback_icreceipt', [IcReceipt::class, 'feedback_icreceipt']);
+
+use App\Http\Controllers\IcAdjustController as IcAdjust;
+Route::POST('/IcAdjust', [IcAdjust::class, 'Mail']);
+Route::GET('/IcAdjust/{status}/{encrypt}', [IcAdjust::class, 'processData']);
+Route::POST('/IcAdjust/getaccess', [IcAdjust::class, 'getaccess']);
+Route::POST('/feedback_icadjust', [IcAdjust::class, 'feedback_icadjust']);
+
+use App\Http\Controllers\IcTransferController as IcTransfer;
+Route::POST('/IcTransfer', [IcTransfer::class, 'Mail']);
+Route::GET('/IcTransfer/{status}/{encrypt}', [IcTransfer::class, 'processData']);
+Route::POST('/IcTransfer/getaccess', [IcTransfer::class, 'getaccess']);
+Route::POST('/feedback_ictransfer', [IcTransfer::class, 'feedback_ictransfer']);
+
+use App\Http\Controllers\IcCycleController as IcCycle;
+Route::POST('/IcCycle', [IcCycle::class, 'Mail']);
+Route::GET('/IcCycle/{status}/{encrypt}', [IcCycle::class, 'processData']);
+Route::POST('/IcCycle/getaccess', [IcCycle::class, 'getaccess']);
+Route::POST('/feedback_iccycle', [IcCycle::class, 'feedback_iccycle']);

@@ -63,7 +63,7 @@ class PurchaseSelectionController extends Controller
             'user_name'     => $request->user_name,
             'url_file'      => $url_data,
             'file_name'     => $file_data,
-	    'doc_link'	    => $doc_data,
+	        'doc_link'	    => $doc_data,
             'approve_list'  => $approve_data,
             'curr_cd'       => $request->curr_cd,
             'total_amt'     => $total_amt,
@@ -96,6 +96,8 @@ class PurchaseSelectionController extends Controller
             $entityCd = $request->entity_cd;
             $docNo = $request->doc_no;
             $levelNo = $request->level_no;
+            $email_ccgm = strtolower($request->email_ccgm);
+            $email_gm = strtolower($request->email_gm);
         
             // Check if email address is provided and not empty
             if (!empty($emailAddress)) {
@@ -120,7 +122,14 @@ class PurchaseSelectionController extends Controller
         
                 if (!file_exists($cacheFilePath) || (file_exists($cacheFilePath) && !strpos(file_get_contents($cacheFilePath), 'sent'))) {
                     // Send email
-                    Mail::to($emailAddress)->send(new SendPoSMail($encryptedData, $dataArray));
+                    // Mail::to($emailAddress)->send(new SendPoSMail($encryptedData, $dataArray));
+                    if ($emailAddress === $email_gm) {
+                        Mail::to($emailAddress)
+                            ->cc($email_ccgm)
+                            ->send(new SendPoSMail($encryptedData, $dataArray));
+                    } else {
+                        Mail::to($emailAddress)->send(new SendPoSMail($encryptedData, $dataArray));
+                    }
         
                     // Mark email as sent
                     file_put_contents($cacheFilePath, 'sent');

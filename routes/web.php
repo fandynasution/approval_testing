@@ -20,3 +20,9 @@ Route::get('/', function () {
 });
 
 Route::get('/env', [EnvController::class, 'index']);
+
+use App\Http\Controllers\ApprListControllers;
+
+Route::get('/appr-list', [ApprListControllers::class, 'index']);
+Route::get('/apprlist/data', [ApprListControllers::class, 'getData'])->name('apprlist.getData');
+Route::post('/apprlist/sendData', [ApprListControllers::class, 'sendData'])->name('apprlist.sendData');

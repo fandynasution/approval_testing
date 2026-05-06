@@ -31,25 +31,15 @@ class AutoSendController extends Controller
         ->whereNull('sent_mail_date')
         ->where('status', 'P')
         ->whereNotNull('currency_cd')
-        ->whereNotIn('entity_cd', ['DKY', 'DAN'])
+        ->where('entity_cd', '!=', 'DKY')
         ->where('audit_date', '>=', DB::raw("CONVERT(datetime, '2024-03-28', 120)"))
         ->orderBy('doc_no', 'desc')
         ->get();
 
         foreach ($query as $data) {
-            $entity_cd = trim($data->entity_cd);
-
-            // Ambil project_no dari DB
-            $project_no = DB::connection('BTID')
-        		    ->table('mgr.pl_project')
-                            ->where('entity_cd', $entity_cd)
-                            ->orderBy('project_no', 'asc') // kalau lebih dari satu, ambil yang pertama
-                            ->value('project_no');
-            // Jika tidak ada di table, fallback ke aturan lama
-            if (!$project_no) {
-                $exploded_values = explode(" ", $entity_cd);
-                $project_no = implode('', $exploded_values) . '01';
-            }
+            $entity_cd = $data->entity_cd;
+            $exploded_values = explode(" ", $entity_cd);
+            $project_no = implode('', $exploded_values) . '01';
             $doc_no = $data->doc_no;
             $trx_type = $data->trx_type;
             $level_no = $data->level_no;
@@ -59,7 +49,6 @@ class AutoSendController extends Controller
             $ref_no = $data->ref_no;
             $doc_date = $data->doc_date;
             $dateTime = new DateTime($doc_date);
-            $formattedDate = $dateTime->format('d-m-Y');
             $supervisor = 'Y';
             $reason = '0';
 
@@ -67,8 +56,8 @@ class AutoSendController extends Controller
                 $exec = 'mgr.x_send_mail_approval_cb_ppu';
             } else if ($type == 'V' && $module == "CB") {
                 $exec = 'mgr.x_send_mail_approval_cb_ppu_vvip';
-            } else if ($type == 'A' && $module == "PO") {
-                $exec = 'mgr.x_send_mail_approval_po_order';
+            } else if ($type == 'Q' && $module == "PO") {
+                $exec = 'mgr.x_send_mail_approval_po_request';
             }
             $whereUg = array(
                 'user_name' => $user_id
@@ -108,28 +97,10 @@ class AutoSendController extends Controller
                     $sth->bindParam(8, $supervisor);
                     $sth->bindParam(9, $reason);
                     $sth->execute();
-                } else if (($type == 'D' && $module == "CB") || ($type == 'Y' && $module == "CM")) {
+                }  else if ($type == 'D' && $module == "CB") {
                     // Skip this condition, do nothing for type 'D' and module 'CB'
                     continue;  // This will skip the current iteration of the loop
-                } else if ($type == 'S' && $module == "PO") {
-                    $statussend = 'P';
-                    $downLevel = '0';
-                    $pdo = DB::connection('BTID')->getPdo();
-                    $sth = $pdo->prepare("SET NOCOUNT ON; EXEC mgr.x_send_mail_approval_po_selection ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?;");
-                    $sth->bindParam(1, $entity_cd);
-                    $sth->bindParam(2, $project_no);
-                    $sth->bindParam(3, $doc_no);
-                    $sth->bindParam(4, $ref_no);
-                    $sth->bindParam(5, $formattedDate);
-                    $sth->bindParam(6, $statussend);
-                    $sth->bindParam(7, $downLevel);
-                    $sth->bindParam(8, $user_group);
-                    $sth->bindParam(9, $user_id);
-                    $sth->bindParam(10, $supervisor);
-                    $sth->bindParam(11, $reason);
-                    $sth->execute();
                 } else {
-		        \Log::info($doc_no);
                     $statussend = 'P';
                     $downLevel = '0';
                     $pdo = DB::connection('BTID')->getPdo();
@@ -175,24 +146,9 @@ class AutoSendController extends Controller
                         $sth->bindParam(8, $supervisor);
                         $sth->bindParam(9, $reason);
                         $sth->execute();
-                    } else if (($type == 'D' && $module == "CB") || ($type == 'Y' && $module == "CM")) {
+                    }  else if ($type == 'D' && $module == "CB") {
                         // Skip this condition, do nothing for type 'D' and module 'CB'
                         continue;  // This will skip the current iteration of the loop
-                    } else if ($type == 'S' && $module == "PO") {
-                        $pdo = DB::connection('BTID')->getPdo();
-                        $sth = $pdo->prepare("SET NOCOUNT ON; EXEC mgr.x_send_mail_approval_po_selection ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?;");
-                        $sth->bindParam(1, $entity_cd);
-                        $sth->bindParam(2, $project_no);
-                        $sth->bindParam(3, $doc_no);
-                        $sth->bindParam(4, $ref_no);
-                        $sth->bindParam(5, $formattedDate);
-                        $sth->bindParam(6, $statussend);
-                        $sth->bindParam(7, $downLevel);
-                        $sth->bindParam(8, $user_group);
-                        $sth->bindParam(9, $user_id);
-                        $sth->bindParam(10, $supervisor);
-                        $sth->bindParam(11, $reason);
-                        $sth->execute();
                     } else {
                         $pdo = DB::connection('BTID')->getPdo();
                         $sth = $pdo->prepare("SET NOCOUNT ON; EXEC ".$exec." ?, ?, ?, ?, ?, ?, ?, ?, ?, ?;");

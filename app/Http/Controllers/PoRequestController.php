@@ -94,6 +94,8 @@ class PoRequestController extends Controller
             $entityCd = $data["entity_cd"];
             $docNo = $data["doc_no"];
             $levelNo = $data["level_no"];
+            $email_ccgm = strtolower($data["email_ccgm"]);
+            $email_gm = strtolower($data["email_gm"]);
         
             if (!empty($emailAddress)) {
                 // Check if the email has been sent before for this document
@@ -117,7 +119,14 @@ class PoRequestController extends Controller
         
                 if (!file_exists($cacheFilePath)) {
                     // Send email only if it has not been sent before
-                    Mail::to($emailAddress)->send(new SendPoRMail($encryptedData, $dataArray));
+                    // Mail::to($emailAddress)->send(new SendPoRMail($encryptedData, $dataArray));
+                    if ($emailAddress === $email_gm) {
+                        Mail::to($emailAddress)
+                            ->cc($email_ccgm)
+                            ->send(new SendPoRMail($encryptedData, $dataArray));
+                    } else {
+                        Mail::to($emailAddress)->send(new SendPoRMail($encryptedData, $dataArray));
+                    }
         
                     // Mark email as sent
                     file_put_contents($cacheFilePath, 'sent');

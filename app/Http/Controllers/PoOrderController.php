@@ -126,6 +126,8 @@ class PoOrderController extends Controller
             $entityCd = $data["entity_cd"];
             $docNo = $data["doc_no"];
             $levelNo = $data["level_no"];
+            $email_ccgm = strtolower($data["email_ccgm"]);
+            $email_gm = strtolower($data["email_gm"]);
         
             if (!empty($emailAddress)) {
                 // Check if the email has been sent before for this document
@@ -149,7 +151,14 @@ class PoOrderController extends Controller
         
                 if (!file_exists($cacheFilePath)) {
                     // Send email
-                    Mail::to($emailAddress)->send(new SendPoMail($encryptedData, $dataArray));
+                    // Mail::to($emailAddress)->send(new SendPoMail($encryptedData, $dataArray));
+                    if ($emailAddress === $email_gm) {
+                        Mail::to($emailAddress)
+                            ->cc($email_ccgm)
+                            ->send(new SendPoMail($encryptedData, $dataArray));
+                    } else {
+                        Mail::to($emailAddress)->send(new SendPoMail($encryptedData, $dataArray));
+                    }
         
                     // Mark email as sent
                     file_put_contents($cacheFilePath, 'sent');
