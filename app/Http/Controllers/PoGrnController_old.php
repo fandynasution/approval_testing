@@ -374,16 +374,26 @@ class PoGrnController extends Controller
         $sth->bindParam(8, $data["user_id"]);
         $sth->bindParam(9, $data["supervisor"]);
         $sth->bindParam(10, $reason);
-        $sth->execute();
-        if ($sth == true) {
-            $msg = "You Have Successfully ".$descstatus." the Purchase Order No. ".$data["doc_no"];
-            $notif = $descstatus." !";
+
+        // EXECUTE (INI YANG PENTING)
+        $exec = $sth->execute();
+
+        if ($exec) {
+            $msg = "You have successfully ".$descstatus." the PO GRN No. ".$data["doc_no"];
+            $notif = $descstatus."!";
             $st = 'OK';
             $image = $imagestatus;
         } else {
-            $msg = "You Failed to ".$descstatus." the Purchase Order No.".$data["doc_no"];
-            $notif = 'Fail to '.$descstatus.' !';
-            $st = 'OK';
+            $error = $sth->errorInfo();
+
+            Log::error('SP EXEC FAILED', [
+                'errorInfo' => $error,
+                'full_query' => $this->interpolateQuery($query, $params)
+            ]);
+
+            $msg = "You failed to ".$descstatus." the PO GRN No. ".$data["doc_no"];
+            $notif = 'Fail to '.$descstatus.'!';
+            $st = 'FAIL'; // <- ini harus FAIL
             $image = "reject.png";
         }
         $msg1 = array(
@@ -522,70 +532,5 @@ class PoGrnController extends Controller
             $callback['Error'] = true;
             $callback['Status']= 500;
         }   
-    }
-
-    public function update($status, $encrypt, $reason)
-    {
-        $data = Crypt::decrypt($request->encrypt);
-
-        $descstatus = " ";
-        $imagestatus = " ";
-
-        $msg = " ";
-        $msg1 = " ";
-        $notif = " ";
-        $st = " ";
-        $image = " ";
-
-        if ($reason == '' || $reason == NULL) {
-            $reason = 'no reason';
-        } else {
-            $reason = $reason;
-        }
-
-        if ($status == "A") {
-            $descstatus = "Approved";
-            $imagestatus = "approved.png";
-        } else if ($status == "R") {
-            $descstatus = "Revised";
-            $imagestatus = "revise.png";
-        } else {
-            $descstatus = "Cancelled";
-            $imagestatus = "reject.png";
-        }
-        
-        $pdo = DB::connection('BTID')->getPdo();
-        $sth = $pdo->prepare("SET NOCOUNT ON; EXEC mgr.x_send_mail_approval_po_grn ?, ?, ?, ?, ?, ?, ?, ?, ?, ?;");
-
-        // binding
-        $sth->bindParam(1, $data["entity_cd"]);
-        $sth->bindParam(2, $data["project_no"]);
-        $sth->bindParam(3, $data["doc_no"]);
-        $sth->bindParam(4, $data["trx_type"]);
-        $sth->bindParam(5, $status);
-        $sth->bindParam(6, $data["level_no"]);
-        $sth->bindParam(7, $data["usergroup"]);
-        $sth->bindParam(8, $data["user_id"]);
-        $sth->bindParam(9, $data["supervisor"]);
-        $sth->bindParam(10, $reason);
-        $sth->execute();
-        if ($sth == true) {
-            $msg = "You Have Successfully ".$descstatus." the Purchase Order No. ".$data["doc_no"];
-            $notif = $descstatus." !";
-            $st = 'OK';
-            $image = $imagestatus;
-        } else {
-            $msg = "You Failed to ".$descstatus." the Purchase Order No.".$data["doc_no"];
-            $notif = 'Fail to '.$descstatus.' !';
-            $st = 'OK';
-            $image = "reject.png";
-        }
-        $msg1 = array(
-            "Pesan" => $msg,
-            "St" => $st,
-            "notif" => $notif,
-            "image" => $image
-        );
-        return view("email.after", $msg1);
     }
 }

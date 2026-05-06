@@ -9,14 +9,13 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use App\Mail\SendPoGrnMail;
-use App\Mail\StaffActionPoGRNMail;
-use App\Jobs\RunApprovalStoredProcedureAzure;
+use App\Mail\SendIcAdjustMail;
+use App\Mail\StaffActionIcAdjustMail;
 use PDO;
 use DateTime;
 use Carbon\Carbon;
 
-class PoGrnController extends Controller
+class IcAdjustController extends Controller
 {
     public function Mail(Request $request)
     {
@@ -29,10 +28,10 @@ class PoGrnController extends Controller
 
         try {
 
-            if (strpos($request->grn_descs, "\n") !== false) {
-                $grn_descs = str_replace("\n", ' (', $request->grn_descs) . ')';
-            } else {
-                $grn_descs = $request->grn_descs;
+            $list_of_approve = explode('; ',  $request->approve_exist);
+            $approve_data = [];
+            foreach ($list_of_approve as $approve) {
+                $approve_data[] = $approve;
             }
 
             $list_of_urls = explode(',', $request->url_file);
@@ -50,14 +49,6 @@ class PoGrnController extends Controller
             foreach ($list_of_files as $file) {
                 $file_data[] = $file;
             }
-
-            $list_of_approve = explode('; ',  $request->approve_exist);
-            $approve_data = [];
-            foreach ($list_of_approve as $approve) {
-                $approve_data[] = $approve;
-            }
-
-            $grn_amount = number_format($request->grn_amount, 2, '.', ',');
 
             $dataArray = array(
                 'entity_cd'         => $request->entity_cd,
@@ -82,11 +73,7 @@ class PoGrnController extends Controller
                 'reason'            => $request->reason,
                 'currency_cd'       => $request->currency_cd,
                 'supervisor'        => $request->supervisor,
-                'supplier_cd'       => $request->supplier_cd,
-                'supplier_name'     => $request->supplier_name,
-                'grn_amount'        => $grn_amount,
-                'grn_descs'         => $request->grn_descs,
-                'subject'          => "Need Approval for PO GRN No.  ".$request->doc_no,
+                'subject'          => "Need Approval for IC Adjust No.  ".$request->doc_no,
             );
 
             $data2Encrypt = array(
@@ -101,9 +88,9 @@ class PoGrnController extends Controller
                 'supervisor'    => $request->supervisor,
                 'email_address' => $request->email_addr,
                 'entity_name'   => $request->entity_name,
-                'type'          => 'G',
-                'type_module'   => 'PO',
-                'text'          => 'PO GRN'
+                'type'          => 'A',
+                'type_module'   => 'IC',
+                'text'          => 'IC Adjust'
             );
 
             $encryptedData = Crypt::encrypt($data2Encrypt);
@@ -119,9 +106,9 @@ class PoGrnController extends Controller
             $entity_cd = $request->entity_cd;
             $doc_no = $request->doc_no;
             $level_no = $request->level_no;
-            $app_url = 'PoGrn';
-            $type = 'G';
-            $module = 'PO';
+            $app_url = 'IcAdjust';
+            $type = 'A';
+            $module = 'IC';
         
             // Check if email addresses are provided and not empty
             if (!empty($emailAddresses)) {
@@ -129,7 +116,7 @@ class PoGrnController extends Controller
                 
                 // Check if the email has been sent before for this document
                 $cacheFile = 'email_sent_' . $approve_seq . '_' . $entity_cd . '_' . $doc_no . '_' . $level_no . '.txt';
-                $cacheFilePath = storage_path('app/mail_cache/send_po_grn/' . date('Ymd') . '/' . $cacheFile);
+                $cacheFilePath = storage_path('app/mail_cache/send_ic_adjust/' . date('Ymd') . '/' . $cacheFile);
                 $cacheDirectory = dirname($cacheFilePath);
         
                 // Ensure the directory exists
@@ -148,14 +135,14 @@ class PoGrnController extends Controller
         
                 if (!file_exists($cacheFilePath)) {
                     // Send email
-                    Mail::to($email)->send(new SendPoGrnMail($encryptedData, $dataArray));
+                    Mail::to($email)->send(new SendIcAdjustMail($encryptedData, $dataArray));
 
                     // Tandai file cache
                     file_put_contents($cacheFilePath, 'sent');
 
                     // Log keberhasilan kirim email
                     Log::channel('sendmailapproval')->info(
-                        'Email PO GRN doc_no '.$doc_no.' Entity ' . $entity_cd.' berhasil dikirim ke: ' . $email
+                        'Email IC Adjust doc_no '.$doc_no.' Entity ' . $entity_cd.' berhasil dikirim ke: ' . $email
                     );
 
                     $callback['Pesan'] = "Email berhasil dikirim ke: $email";
@@ -164,7 +151,7 @@ class PoGrnController extends Controller
 
                 } else {
                     // Email was already sent
-                    Log::channel('sendmailapproval')->info('Email PO GRN doc_no '.$doc_no.' Entity ' . $entity_cd.' already sent to: ' . $email);
+                    Log::channel('sendmailapproval')->info('Email IC Adjust doc_no '.$doc_no.' Entity ' . $entity_cd.' already sent to: ' . $email);
                     $callback['Pesan'] = "Email sudah pernah dikirim ke: $email";
                     $callback['Error'] = false;
                     $callback['Status']= 201;
@@ -301,29 +288,11 @@ class PoGrnController extends Controller
                     "bgcolor"       => $bgcolor,
                     "valuebt"       => $valuebt
                 );
-                return view('email/pogrn/passcheckwithremark', $data);
+                return view('email/icadjust/passcheckwithremark', $data);
                 Artisan::call('config:cache');
                 Artisan::call('cache:clear');
             }
         }
-    }
-
-    private function interpolateQuery($query, $params) {
-        foreach ($params as $param) {
-            if (is_null($param)) {
-                $value = "NULL";
-            } elseif (is_int($param) || is_float($param)) {
-                // hanya angka asli (bukan string)
-                $value = $param;
-            } else {
-                // treat sebagai string
-                $value = "'" . str_replace("'", "''", $param) . "'";
-            }
-
-            $query = preg_replace('/\?/', $value, $query, 1);
-        }
-
-        return $query;
     }
 
     public function getaccess(Request $request)
@@ -359,11 +328,8 @@ class PoGrnController extends Controller
             $descstatus = "Cancelled";
             $imagestatus = "reject.png";
         }
-        
         $pdo = DB::connection('BTID')->getPdo();
-        $sth = $pdo->prepare("SET NOCOUNT ON; EXEC mgr.x_send_mail_approval_po_grn ?, ?, ?, ?, ?, ?, ?, ?, ?, ?;");
-
-        // binding
+        $sth = $pdo->prepare("SET NOCOUNT ON; EXEC mgr.x_send_mail_approval_ic_adjust ?, ?, ?, ?, ?, ?, ?, ?, ?, ?;");
         $sth->bindParam(1, $data["entity_cd"]);
         $sth->bindParam(2, $data["project_no"]);
         $sth->bindParam(3, $data["doc_no"]);
@@ -376,13 +342,13 @@ class PoGrnController extends Controller
         $sth->bindParam(10, $reason);
         $sth->execute();
         if ($sth == true) {
-            $msg = "You Have Successfully ".$descstatus." the Purchase Order No. ".$data["doc_no"];
-            $notif = $descstatus." !";
+            $msg = "You have successfully ".$descstatus." the IC Adjust No. ".$data["doc_no"];
+            $notif = $descstatus."!";
             $st = 'OK';
             $image = $imagestatus;
         } else {
-            $msg = "You Failed to ".$descstatus." the Purchase Order No.".$data["doc_no"];
-            $notif = 'Fail to '.$descstatus.' !';
+            $msg = "You failed to ".$descstatus." the IC Adjust No.".$data["doc_no"];
+            $notif = 'Fail to '.$descstatus.'!';
             $st = 'OK';
             $image = "reject.png";
         }
@@ -395,7 +361,7 @@ class PoGrnController extends Controller
         return view("email.after", $msg1);
     }
 
-    public function feedback_pogrn(Request $request)
+    public function feedback_icadjust(Request $request)
     {
         $callback = array(
             'Error' => false,
@@ -422,21 +388,21 @@ class PoGrnController extends Controller
                 $bodyEMail = 'Your Request '.$request->descs.' No. '.$request->doc_no.' has been Approved';
             }
 
-            $list_of_urls = explode('; ', $request->url_file);
-            $list_of_files = explode('; ', $request->file_name);
+            // $list_of_urls = explode('; ', $request->url_file);
+            // $list_of_files = explode('; ', $request->file_name);
             // $list_of_doc = explode('; ', $request->document_link);
 
-            $url_data = [];
-            $file_data = [];
+            // $url_data = [];
+            // $file_data = [];
             // $doc_data = [];
 
-            foreach ($list_of_urls as $url) {
-                $url_data[] = $url;
-            }
+            // foreach ($list_of_urls as $url) {
+            //     $url_data[] = $url;
+            // }
 
-            foreach ($list_of_files as $file) {
-                $file_data[] = $file;
-            }
+            // foreach ($list_of_files as $file) {
+            //     $file_data[] = $file;
+            // }
             // foreach ($list_of_doc as $doc) {
             //     $doc_data[] = $doc;
             // }
@@ -452,17 +418,11 @@ class PoGrnController extends Controller
                 'staff_act_send'    => $request->staff_act_send,
                 'entity_name'       => $request->entity_name,
                 'entity_cd'         => $request->entity_cd,
-                'url_file'          => $url_data,
-                'file_name'         => $file_data,
+                // 'url_file'          => $url_data,
+                // 'file_name'         => $file_data,
                 // 'doc_link'          => $doc_data,
                 'action_date'       => Carbon::now('Asia/Jakarta')->format('d-m-Y H:i')
             );
-            $emailAddresses = strtolower($request->email_addr);
-            $doc_no = $request->doc_no;
-            $entity_name = $request->entity_name;
-            $entity_cd = $request->entity_cd;
-            $status = $request->status;
-            $approve_seq = $request->approve_seq;
 
             $emailAddresses = strtolower($request->email_addr);
             $doc_no = $request->doc_no;
@@ -476,7 +436,7 @@ class PoGrnController extends Controller
                 $emailSent = false;
                 // Check if the email has been sent before for this document
                 $cacheFile = 'email_feedback_sent_' . $approve_seq . '_' . $entity_cd . '_' . $doc_no . '_' . $status . '.txt';
-                $cacheFilePath = storage_path('app/mail_cache/feedbackPoGRN/' . date('Ymd'). '/' . $cacheFile);
+                $cacheFilePath = storage_path('app/mail_cache/feedback_Ic_Adjust/' . date('Ymd'). '/' . $cacheFile);
                 $cacheDirectory = dirname($cacheFilePath);
             
                 // Ensure the directory exists
@@ -495,12 +455,12 @@ class PoGrnController extends Controller
         
                 if (!file_exists($cacheFilePath)) {
                     // Send email
-                    Mail::to($emails)->send(new StaffActionPoGRNMail($EmailBack));
+                    Mail::to($emails)->send(new StaffActionIcAdjustMail($EmailBack));
             
                     // Mark email as sent
                     file_put_contents($cacheFilePath, 'sent');
                     $sentTo = $emailAddresses;
-                    Log::channel('sendmailfeedback')->info('Email Feedback PO GRN doc_no '.$doc_no.' Entity ' . $entity_cd.' berhasil dikirim ke: ' . $sentTo);
+                    Log::channel('sendmailfeedback')->info('Email Feedback IC Adjust doc_no '.$doc_no.' Entity ' . $entity_cd.' berhasil dikirim ke: ' . $sentTo);
                     // return 'Email berhasil dikirim ke: ' . $sentTo;
                     // $emailSent = true;
                     $callback['Pesan'] = "Email feedback berhasil dikirim ke: $sentTo";
@@ -522,70 +482,5 @@ class PoGrnController extends Controller
             $callback['Error'] = true;
             $callback['Status']= 500;
         }   
-    }
-
-    public function update($status, $encrypt, $reason)
-    {
-        $data = Crypt::decrypt($request->encrypt);
-
-        $descstatus = " ";
-        $imagestatus = " ";
-
-        $msg = " ";
-        $msg1 = " ";
-        $notif = " ";
-        $st = " ";
-        $image = " ";
-
-        if ($reason == '' || $reason == NULL) {
-            $reason = 'no reason';
-        } else {
-            $reason = $reason;
-        }
-
-        if ($status == "A") {
-            $descstatus = "Approved";
-            $imagestatus = "approved.png";
-        } else if ($status == "R") {
-            $descstatus = "Revised";
-            $imagestatus = "revise.png";
-        } else {
-            $descstatus = "Cancelled";
-            $imagestatus = "reject.png";
-        }
-        
-        $pdo = DB::connection('BTID')->getPdo();
-        $sth = $pdo->prepare("SET NOCOUNT ON; EXEC mgr.x_send_mail_approval_po_grn ?, ?, ?, ?, ?, ?, ?, ?, ?, ?;");
-
-        // binding
-        $sth->bindParam(1, $data["entity_cd"]);
-        $sth->bindParam(2, $data["project_no"]);
-        $sth->bindParam(3, $data["doc_no"]);
-        $sth->bindParam(4, $data["trx_type"]);
-        $sth->bindParam(5, $status);
-        $sth->bindParam(6, $data["level_no"]);
-        $sth->bindParam(7, $data["usergroup"]);
-        $sth->bindParam(8, $data["user_id"]);
-        $sth->bindParam(9, $data["supervisor"]);
-        $sth->bindParam(10, $reason);
-        $sth->execute();
-        if ($sth == true) {
-            $msg = "You Have Successfully ".$descstatus." the Purchase Order No. ".$data["doc_no"];
-            $notif = $descstatus." !";
-            $st = 'OK';
-            $image = $imagestatus;
-        } else {
-            $msg = "You Failed to ".$descstatus." the Purchase Order No.".$data["doc_no"];
-            $notif = 'Fail to '.$descstatus.' !';
-            $st = 'OK';
-            $image = "reject.png";
-        }
-        $msg1 = array(
-            "Pesan" => $msg,
-            "St" => $st,
-            "notif" => $notif,
-            "image" => $image
-        );
-        return view("email.after", $msg1);
     }
 }
