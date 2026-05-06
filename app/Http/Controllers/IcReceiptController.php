@@ -340,36 +340,36 @@ class IcReceiptController extends Controller
         $sth->bindParam(8, $data["user_id"]);
         $sth->bindParam(9, $data["supervisor"]);
         $sth->bindParam(10, $reason);
-        var_dump($data["entity_cd"]);
-        var_dump($data["project_no"]);
-        var_dump($data["doc_no"]);
-        var_dump($data["trx_type"]);
-        var_dump($status);
-        var_dump($data["level_no"]);
-        var_dump($data["usergroup"]);
-        var_dump($data["user_id"]);
-        var_dump($data["supervisor"]);
-        var_dump($reason);
+        // var_dump($data["entity_cd"]);
+        // var_dump($data["project_no"]);
+        // var_dump($data["doc_no"]);
+        // var_dump($data["trx_type"]);
+        // var_dump($status);
+        // var_dump($data["level_no"]);
+        // var_dump($data["usergroup"]);
+        // var_dump($data["user_id"]);
+        // var_dump($data["supervisor"]);
+        // var_dump($reason);
 
-        // $sth->execute();
-        // if ($sth == true) {
-        //     $msg = "You have successfully ".$descstatus." the IC Receipt No. ".$data["doc_no"];
-        //     $notif = $descstatus."!";
-        //     $st = 'OK';
-        //     $image = $imagestatus;
-        // } else {
-        //     $msg = "You failed to ".$descstatus." the IC Receipt No.".$data["doc_no"];
-        //     $notif = 'Fail to '.$descstatus.'!';
-        //     $st = 'OK';
-        //     $image = "reject.png";
-        // }
-        // $msg1 = array(
-        //     "Pesan" => $msg,
-        //     "St" => $st,
-        //     "notif" => $notif,
-        //     "image" => $image
-        // );
-        // return view("email.after", $msg1);
+        $sth->execute();
+        if ($sth == true) {
+            $msg = "You have successfully ".$descstatus." the IC Receipt No. ".$data["doc_no"];
+            $notif = $descstatus."!";
+            $st = 'OK';
+            $image = $imagestatus;
+        } else {
+            $msg = "You failed to ".$descstatus." the IC Receipt No.".$data["doc_no"];
+            $notif = 'Fail to '.$descstatus.'!';
+            $st = 'OK';
+            $image = "reject.png";
+        }
+        $msg1 = array(
+            "Pesan" => $msg,
+            "St" => $st,
+            "notif" => $notif,
+            "image" => $image
+        );
+        return view("email.after", $msg1);
     }
 
     public function feedback_icreceipt(Request $request)
